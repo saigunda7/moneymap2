@@ -18,20 +18,35 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // In a real app, you would make an API call here
-    // For demo purposes, we'll just simulate a successful login
-    const mockUser = { email, name: email.split('@')[0] };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // In a real app, you would validate the credentials against your backend
+    const userData = { 
+      uid: `local-${Date.now()}`,
+      email,
+      name: email.split('@')[0],
+      photoURL: null
+    };
+    
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
     navigate('/dashboard');
   };
 
   const register = async (name, email, password) => {
-    // In a real app, you would make an API call here
-    // For demo purposes, we'll just simulate a successful registration
-    const newUser = { email, name };
-    setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const userData = { 
+      uid: `local-${Date.now()}`,
+      email,
+      name: name,
+      photoURL: null
+    };
+    
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
     navigate('/dashboard');
   };
 
@@ -41,13 +56,36 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
+  const resetPassword = async (email) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    // In a real app, you would call your backend to send a password reset email
+    return { success: true };
+  };
+
+  const loginWithGoogle = async () => {
+    // Simulate Google login
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const userData = {
+      uid: `google-${Date.now()}`,
+      email: 'user@example.com',
+      name: 'Google User',
+      photoURL: null
+    };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    navigate('/dashboard');
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
     isLoading,
     login,
+    loginWithGoogle,
     register,
     logout,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
