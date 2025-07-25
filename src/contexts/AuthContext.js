@@ -7,6 +7,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  
+  // Add currentUser alias for backward compatibility
+  const currentUser = user;
 
   // Check for existing session on initial load
   useEffect(() => {
@@ -18,36 +21,46 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // In a real app, you would validate the credentials against your backend
-    const userData = { 
-      uid: `local-${Date.now()}`,
-      email,
-      name: email.split('@')[0],
-      photoURL: null
-    };
-    
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    navigate('/dashboard');
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // In a real app, you would validate the credentials against your backend
+      const userData = { 
+        uid: `local-${Date.now()}`,
+        email,
+        name: email.split('@')[0],
+        photoURL: null
+      };
+      
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const register = async (name, email, password) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const userData = { 
-      uid: `local-${Date.now()}`,
-      email,
-      name: name,
-      photoURL: null
-    };
-    
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    navigate('/dashboard');
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const userData = { 
+        uid: `local-${Date.now()}`,
+        email,
+        name: name,
+        photoURL: null
+      };
+      
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
@@ -63,32 +76,47 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
-  const loginWithGoogle = async () => {
-    // Simulate Google login
-    await new Promise(resolve => setTimeout(resolve, 500));
+  const loginWithGoogle = async (email) => {
+    if (!email) {
+      throw new Error('Email is required for Google Sign-In');
+    }
+    
+    if (!email.includes('@')) {
+      throw new Error('Please enter a valid email address');
+    }
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     const userData = {
       uid: `google-${Date.now()}`,
-      email: 'user@example.com',
-      name: 'Google User',
-      photoURL: null
+      email: email,
+      name: email.split('@')[0],
+      photoURL: null,
+      provider: 'google'
     };
+    
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    navigate('/dashboard');
+    return userData;
   };
 
-  const value = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    loginWithGoogle,
-    register,
-    logout,
-    resetPassword,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        currentUser: user,
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        register,
+        logout,
+        resetPassword,
+        loginWithGoogle,
+      }}>
+      {!isLoading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

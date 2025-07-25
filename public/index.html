@@ -1,16 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="MoneyMap - Personal Budget & Expense Tracker" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+    <meta
+      name="description"
+      content="MoneyMap - Your personal finance tracker"
+    />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>MoneyMap - Personal Budget & Expense Tracker</title>
+    
+    <!-- Theme initialization script - prevents flash of incorrect theme -->
+    <script>
+      // Immediately set theme to avoid flash of incorrect theme
+      (function() {
+        // Get stored theme or fallback to system preference
+        const storedTheme = localStorage.getItem('moneymap-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        let theme = 'light';
+        if (storedTheme) {
+          theme = storedTheme;
+        } else if (systemPrefersDark) {
+          theme = 'dark';
+        }
+        
+        // Apply the theme to the HTML element
+        document.documentElement.className = theme;
+        // Apply the theme immediately to prevent flash of default theme
+        document.documentElement.classList.add(theme);
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Update meta theme-color
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.content = theme === 'dark' ? '#111827' : '#ffffff';
+        }
+      })();
+    </script>
   </head>
-  <body>
+  <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>

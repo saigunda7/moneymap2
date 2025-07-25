@@ -1,6 +1,6 @@
 import React, { useState, Fragment } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, Transition, Switch } from '@headlessui/react';
 import { 
   Bars3Icon, 
   XMarkIcon, 
@@ -10,20 +10,24 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   UserIcon,
-  HomeIcon
+  HomeIcon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, current: location.pathname === '/dashboard', protected: true },
     { name: 'Transactions', href: '/transactions', icon: CurrencyDollarIcon, current: location.pathname === '/transactions', protected: true },
-  ];
+  ].filter(item => !item.protected || isAuthenticated);
 
   const userNavigation = [
     { name: 'Your Profile', href: '/profile', icon: UserIcon },
@@ -42,25 +46,27 @@ const Navbar = () => {
         }
       } 
     },
-  ];
+  ].filter(item => !item.protected || isAuthenticated);
 
   return (
-    <nav className="bg-white border-b border-gray-100">
+    <nav className="bg-white dark:bg-gray-800 shadow-sm transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and desktop nav */}
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-md">
-                <CurrencyDollarIcon className="h-5 w-5 text-white" />
-              </div>
-              <span className="ml-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
-                MoneyMap
-              </span>
-            </Link>
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/" className="flex items-center">
+                <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-md">
+                  <CurrencyDollarIcon className="h-5 w-5 text-white" />
+                </div>
+                <span className="ml-2 text-xl font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
+                  MoneyMap
+                </span>
+              </Link>
+            </div>
             
             {/* Desktop navigation */}
-            <div className="hidden md:ml-8 md:flex md:space-x-6">
+            <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
               {navigation
                 .filter(item => !item.protected || isAuthenticated)
                 .map((item) => (
@@ -80,19 +86,23 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <span className="sr-only">Open main menu</span>
-              {isOpen ? (
-                <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-              )}
-            </button>
+          {/* Mobile Menu Button */}
+          <div className="flex items-center">
+            
+            {/* Mobile menu button */}
+            <div className="sm:hidden">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              >
+                <span className="sr-only">Open main menu</span>
+                {isOpen ? (
+                  <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Right side items */}
@@ -165,75 +175,88 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="pt-2 pb-3 space-y-1">
+      <Transition
+        show={isOpen}
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <div className="sm:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-2 pb-3 space-y-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`${
+                  item.current
+                    ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 text-blue-700 dark:text-blue-300'
+                    : 'border-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-800 dark:hover:text-white'
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200`}
+              >
+                <item.icon className="h-5 w-5 mr-2 inline-block" />
+                {item.name}
+              </Link>
+            ))}
+          </div>
           {isAuthenticated ? (
-            <>
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`${
-                    item.current
-                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500'
-                      : 'text-gray-600 hover:bg-gray-50 hover:border-l-4 hover:border-gray-200'
-                  } block pl-3 pr-4 py-2 text-base font-medium`}
-                >
-                  <div className="flex items-center">
-                    <item.icon className="h-5 w-5 mr-2" />
-                    {item.name}
-                  </div>
-                </Link>
-              ))}
-              <div className="pt-4 pb-3 border-t border-gray-200">
-                <div className="flex items-center px-4">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center border border-blue-100">
-                    <UserCircleIcon className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">{user?.name || 'User'}</div>
-                    <div className="text-sm font-medium text-gray-500">{user?.email}</div>
-                  </div>
+            <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center px-4">
+                <div className="flex-shrink-0">
+                  <UserCircleIcon className="h-10 w-10 text-gray-400" />
                 </div>
-                <div className="mt-3 space-y-1">
-                  {userNavigation.map((item) => (
-                    <button
-                      key={item.name}
-                      onClick={(e) => {
-                        if (item.onClick) item.onClick(e);
-                        else navigate(item.href);
-                        setIsOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 flex items-center"
-                    >
-                      <item.icon className="h-5 w-5 mr-3 text-gray-400" />
-                      {item.name}
-                    </button>
-                  ))}
+                <div className="ml-3">
+                  <div className="text-base font-medium text-gray-800 dark:text-gray-200">
+                    {user?.displayName || 'User'}
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {user?.email}
+                  </div>
                 </div>
               </div>
-            </>
+              <div className="mt-3 space-y-1">
+                {userNavigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={(e) => {
+                      if (item.onClick) item.onClick(e);
+                      setIsOpen(false);
+                    }}
+                    className="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    <item.icon className="h-5 w-5 mr-2 inline-block" />
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ) : (
-            <div className="px-2 pt-2 pb-3 space-y-2">
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                className="block w-full px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors duration-150"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setIsOpen(false)}
-                className="block w-full px-4 py-2 text-base font-medium text-center text-white bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg shadow-sm transition-colors duration-150"
-              >
-                Get started
-              </Link>
+            <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center px-4 space-x-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors duration-200"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-md shadow-sm transition-colors duration-200"
+                >
+                  Sign up
+                </Link>
+              </div>
             </div>
           )}
         </div>
-      </div>
+      </Transition>
     </nav>
   );
 };
